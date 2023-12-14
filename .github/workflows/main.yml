@@ -29,24 +29,24 @@ jobs:
         continue-on-error: true
         run: mvn test -DbrowserType="chrome" -DheadlessExecution="true" -Dtest="${{ github.event.inputs.testsPath }}"
         
-      - name: Generate Allure Report Single File
+      - name: Generate Allure Report
         continue-on-error: true
         run: |
           sudo chmod -R a+rwx .allure/allure-2.25.0/bin
-          ./.allure/allure-2.25.0/bin/allure generate --single-file --clean target/allure-results
-    
+          ./.allure/allure-2.25.0/bin/allure generate target/surefire-reports/ -o allure-report --clean
+
       - name: Upload Allure Report as Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Chrome_Linux_Allure
-          path: allure-report/index.html
-      
-      - name: Publish Report
+          name: Allure_Report
+          path: allure-report
+
+      - name: Publish Report 
         continue-on-error: true
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: Tests Report Chrome_Linux
+          name: Tests Report chrome
           path: 'target/surefire-reports/TEST-*.xml'
           reporter: java-junit
 
@@ -71,11 +71,12 @@ jobs:
 
       - name: Run Tests
         continue-on-error: true
-        run: mvn test -DbrowserType="firefox" -DheadlessExecution="false"  -Dtest="${{ github.event.inputs.testsPath }}"
+        run: mvn test -DbrowserType="firefox" -DheadlessExecution="false" -Dtest="${{ github.event.inputs.testsPath }}"
 
       - name: Generate Allure Report Single File
         continue-on-error: true
-        run: ./.allure/allure-2.25.0/bin/allure generate --single-file --clean target/allure-results
+        run: |
+          ./.allure/allure-2.25.0/bin/allure generate --single-file --clean target/allure-results
     
       - name: Upload Allure Report as Artifact
         uses: actions/upload-artifact@v3
@@ -91,5 +92,3 @@ jobs:
           name: Tests Report Firefox_Windows
           path: 'target/surefire-reports/TEST-*.xml'
           reporter: java-junit
-
-             
