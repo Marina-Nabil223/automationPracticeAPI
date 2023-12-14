@@ -1,0 +1,44 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      testsPath:
+        description: 'Path to Tests to be Executed'
+        default: ''
+
+jobs:
+  E2E_Test_Ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 20
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '20'
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.9.6
+
+      - name: Run Tests
+        continue-on-error: true
+        run: mvn test -DbrowserType="chrome" -DheadlessExecution="true" -Dtest="${{ github.event.inputs.testsPath }}"
+        
+      - name: Generate Allure Report Single File
+        continue-on-error: true
+        run: |
+          sudo chmod -R a+rwx .allure/allure-2.25.0/bin
+          ./.allure/allure-2.25.0/bin/allure generate --single-file --clean target/allure-results
+    
+      - name: Upload Allure Report as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Chrome_Linux_Allure
+          path: allure-report/index.html
+
+             
