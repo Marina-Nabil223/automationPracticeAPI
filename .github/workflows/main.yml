@@ -10,6 +10,8 @@ on:
 jobs:
   E2E_Test_Ubuntu:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
